@@ -20,7 +20,7 @@ export class ChatgptService {
     const { ChatGPTAPI, ChatGPTAPIBrowser, getBrowser, getOpenAIAuth } =
       await import('chatgpt');
     const users = JSON.parse(this.conf.get('chatgpt.users') ?? '[]');
-    if (!user.email || !user.password) {
+    if (!user?.email || !user?.password) {
       const index = Math.floor(Math.random() * users.length);
       user = users[index];
     }
