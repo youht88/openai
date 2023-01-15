@@ -15,7 +15,7 @@ export class ChatgptService {
   accountMap: Map<string, Account> = new Map();
   //private readonly stream = eventStream.
   constructor(private readonly conf: ConfigService) {}
-  async init(user) {
+  async init(user?) {
     const executablePath = this.conf.get('puppeteer.executablePath') ?? '';
     const { ChatGPTAPI, ChatGPTAPIBrowser, getBrowser, getOpenAIAuth } =
       await import('chatgpt');
