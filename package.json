@@ -25,14 +25,14 @@
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
-    "@std/esm": "^0.26.0",
-    "@types/event-stream": "^4.0.0",
+    "@nestjs/platform-socket.io": "^8.0.0",
+    "@nestjs/websockets": "^8.0.0",
     "chatgpt": "^3.4.1",
-    "event-stream": "^4.0.1",
     "openai": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "socket.io": "^4.5.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

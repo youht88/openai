@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as eventStream from 'event-stream';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 //import { ChatGPTAPI, ChatGPTAPIBrowser } from 'chatgpt';
 type Account = {
   email: string;
@@ -16,10 +15,10 @@ export class ChatgptService {
   //private readonly stream = eventStream.
   constructor(private readonly conf: ConfigService) {}
   async init(user?) {
-    const executablePath = this.conf.get('puppeteer.executablePath') ?? '';
+    const executablePath = this.conf.get("puppeteer.executablePath") ?? "";
     const { ChatGPTAPI, ChatGPTAPIBrowser, getBrowser, getOpenAIAuth } =
-      await import('chatgpt');
-    const users = JSON.parse(this.conf.get('chatgpt.users') ?? '[]');
+      await import("chatgpt");
+    const users = JSON.parse(this.conf.get("chatgpt.users") ?? "[]");
     if (!user?.email || !user?.password) {
       const index = Math.floor(Math.random() * users.length);
       user = users[index];
@@ -30,7 +29,10 @@ export class ChatgptService {
     //   sessionToken: this.conf.get('chatgpt.sessionToken') ?? '',
     //   clearanceToken: this.conf.get('chatgpt.clearanceToken') ?? '',
     // });
-    if (!this.accountMap[user.email]) {
+    if (!user) {
+      return "please config env/dev.env";
+    }
+    if (!this.accountMap[user!.email]) {
       const chatgptApi = new ChatGPTAPIBrowser({
         email: user.email,
         password: user.password,
@@ -65,7 +67,7 @@ export class ChatgptService {
       account = this.accountMap[accountEmail];
     }
     console.log(
-      `message:${message},conversationId:${account.conversationId}/${conversationId},parentMessageId:${account.parentMessageId}`,
+      `message:${message},conversationId:${account.conversationId}/${conversationId},parentMessageId:${account.parentMessageId}`
     );
     if (conversationId == null) {
       conversationId = account.conversationId;
@@ -74,13 +76,13 @@ export class ChatgptService {
       conversationId: conversationId,
       parentMessageId: account.parentMessageId,
       onProgress: (partialResponse) => {
-        response.send(partialResponse?.response);
+        console.log(partialResponse);
       },
     });
     account.conversationId = res.conversationId;
     account.parentMessageId = res.messageId;
     console.log(
-      `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`,
+      `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
     );
     return res;
   }
