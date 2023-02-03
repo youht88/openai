@@ -15,37 +15,23 @@ export class ChatgptService {
   //private readonly stream = eventStream.
   constructor(private readonly conf: ConfigService) {}
   async init(user?) {
-    const executablePath = this.conf.get("puppeteer.executablePath") ?? "";
-    const { ChatGPTAPI, ChatGPTAPIBrowser, getBrowser, getOpenAIAuth } =
-      await import("chatgpt");
+    const { ChatGPTAPI } = await import("chatgpt");
+
     const users = JSON.parse(this.conf.get("chatgpt.users") ?? "[]");
-    if (!user?.email || !user?.password) {
+    if (!user?.email) {
       const index = Math.floor(Math.random() * users.length);
       user = users[index];
     }
     console.log(user);
 
-    // this.chatgptApi = new ChatGPTAPI({
-    //   sessionToken: this.conf.get('chatgpt.sessionToken') ?? '',
-    //   clearanceToken: this.conf.get('chatgpt.clearanceToken') ?? '',
-    // });
     if (!user) {
       return "please config env/dev.env";
     }
+    const token = user!["tokens"][0];
     if (!this.accountMap[user!.email]) {
-      const chatgptApi = new ChatGPTAPIBrowser({
-        email: user.email,
-        password: user.password,
-        executablePath: executablePath,
-        isMicrosoftLogin: user.isMicrosoftLogin ? true : false,
-        isGoogleLogin: user.isGoogleLogin ? true : false,
-        debug: false,
-        minimize: true,
-      });
-      await chatgptApi.initSession();
+      const chatgptApi = new ChatGPTAPI({ apiKey: token });
       this.accountMap[user.email] = {
         email: user.email,
-        password: user.password,
         chatgptApi: chatgptApi,
       };
     }
@@ -73,8 +59,8 @@ export class ChatgptService {
       conversationId = account.conversationId;
     }
     const res = await account.chatgptApi.sendMessage(message, {
-      conversationId: conversationId,
-      parentMessageId: account.parentMessageId,
+      // conversationId: conversationId,
+      // parentMessageId: account.parentMessageId,
       onProgress: (partialResponse) => {
         console.log(partialResponse);
       },
