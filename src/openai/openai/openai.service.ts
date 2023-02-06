@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Configuration, OpenAIApi } from 'openai';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { Configuration, OpenAIApi } from "openai";
 
 @Injectable()
 export class OpenaiService {
@@ -8,7 +8,7 @@ export class OpenaiService {
 
   private _getOpenaiApi(apiKey?: string, organization?: string): OpenAIApi {
     if (!apiKey) {
-      const apiKeys = JSON.parse(this.conf.get('openai.apiKeys') ?? '[]');
+      const apiKeys = JSON.parse(this.conf.get("openai.apiKeys") ?? "[]");
       apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     }
     console.log(`apiKey:${apiKey},organization:${organization}`);
@@ -25,29 +25,40 @@ export class OpenaiService {
     }
     return new OpenAIApi(configuration);
   }
-  async sendMessage(message: string, args) {
+  async sendMessage(message: string, response, isStream, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
-    const response = await openaiApi.createCompletion({
-      model: args.model ?? this.conf.get('openai.model') ?? '',
-      prompt: message,
-      temperature: parseInt(args.temperature) || 0,
-      max_tokens: parseInt(args.max_tokens) || 2048,
-      stream: args.stream == 'true' ? true : false,
-    });
-    return response.data;
+    if (isStream) {
+      const res = await openaiApi.createCompletion({
+        model: args.model ?? this.conf.get("openai.model") ?? "",
+        prompt: message,
+        temperature: parseInt(args.temperature) || 0,
+        max_tokens: parseInt(args.max_tokens) || 2048,
+        stream: isStream,
+      });
+      console.log(res.data);
+      return res.data;
+    } else {
+      const res = await openaiApi.createCompletion({
+        model: args.model ?? this.conf.get("openai.model") ?? "",
+        prompt: message,
+        temperature: parseInt(args.temperature) || 0,
+        max_tokens: parseInt(args.max_tokens) || 2048,
+      });
+      return res.data["choices"][0]["text"];
+    }
   }
   async editMessage(message: string, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.createEdit({
-      model: args.model ?? 'text-davinci-edit-001',
+      model: args.model ?? "text-davinci-edit-001",
       instruction: message,
-      input: args.input ?? '',
+      input: args.input ?? "",
       temperature: parseInt(args.temperature) || 0,
     });
     return response.data;
@@ -55,17 +66,17 @@ export class OpenaiService {
   async getImage(prompt: string, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     let sizeStr;
-    const sizeMode = args?.sizeMode ?? 'm';
+    const sizeMode = args?.sizeMode ?? "m";
     const n = args?.n ?? 1;
-    if (sizeMode == 's') {
-      sizeStr = '256x256';
-    } else if (sizeMode == 'm') {
-      sizeStr = '512x512';
-    } else if (sizeMode == 'b') {
-      sizeStr = '1024x1024';
+    if (sizeMode == "s") {
+      sizeStr = "256x256";
+    } else if (sizeMode == "m") {
+      sizeStr = "512x512";
+    } else if (sizeMode == "b") {
+      sizeStr = "1024x1024";
     } else {
       sizeStr = sizeMode;
     }
@@ -87,7 +98,7 @@ export class OpenaiService {
   async listFiles(args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.listFiles();
     return response.data;
@@ -95,7 +106,7 @@ export class OpenaiService {
   async delFile(file: string, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.deleteFile(file);
     return response.data;
@@ -103,15 +114,19 @@ export class OpenaiService {
   async listModels(args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.listModels();
-    return response.data;
+    if (args.name) {
+      return response.data.data.filter((item) => item.id.match(args.name));
+    } else {
+      return response.data.data;
+    }
   }
   async delModel(model: string, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.deleteModel(model);
     return response.data;
@@ -119,7 +134,7 @@ export class OpenaiService {
   async createFineTunes(args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.createFineTune({
       training_file: args?.training_file,
@@ -135,7 +150,7 @@ export class OpenaiService {
   async listFineTunes(args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
-      args?.organization,
+      args?.organization
     );
     const response = await openaiApi.listFineTunes();
     return response.data;

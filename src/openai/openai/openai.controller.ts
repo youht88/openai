@@ -1,47 +1,66 @@
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { OpenaiService } from './openai.service';
+import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { OpenaiService } from "./openai.service";
 
-@Controller('openai')
+@Controller("openai")
 export class OpenaiController {
-  lastContext = '';
+  lastContext = "";
   constructor(private readonly openaiService: OpenaiService) {}
-  @Get('send/:message')
-  async sendMessage(@Param('message') message: string, @Query() args) {
-    return this.openaiService.sendMessage(message, args);
+  @Get("send/:message")
+  async sendMessage(
+    @Param("message") message: string,
+    @Query() args,
+    @Query("stream") stream: string,
+    @Res() response
+  ) {
+    const isStream = stream == undefined ? false : true;
+    if (isStream) {
+      response.header("Content-Type", "text/event-stream");
+    }
+    const res = await this.openaiService.sendMessage(
+      message,
+      response,
+      stream,
+      args
+    );
+    if (isStream) {
+      response.end();
+    } else {
+      response.end(res);
+    }
   }
-  @Get('edit/:message')
-  async editMessage(@Param('message') message: string, @Query() args) {
+  @Get("edit/:message")
+  async editMessage(@Param("message") message: string, @Query() args) {
     return this.openaiService.editMessage(message, args);
   }
-  @Get('image/:prompt')
-  async getImage(@Param('prompt') prompt: string, @Query() args) {
+  @Get("image/:prompt")
+  async getImage(@Param("prompt") prompt: string, @Query() args) {
     return this.openaiService.getImage(prompt, args);
   }
-  @Get('delFile/:file')
-  async delFile(@Param('file') file: string, @Query() args) {
+  @Get("delFile/:file")
+  async delFile(@Param("file") file: string, @Query() args) {
     return this.openaiService.delFile(file, args);
   }
-  @Post('create/file')
+  @Post("create/file")
   async createFile(@Query() args) {
     return this.openaiService.createFile(args);
   }
-  @Get('files')
+  @Get("files")
   async listFiles(@Query() args) {
     return this.openaiService.listFiles(args);
   }
-  @Get('delModel/:model')
-  async delModel(@Param('model') model: string, @Query() args) {
+  @Get("delModel/:model")
+  async delModel(@Param("model") model: string, @Query() args) {
     return this.openaiService.delModel(model, args);
   }
-  @Get('models')
+  @Get("models")
   async listModels(@Query() args) {
     return this.openaiService.listModels(args);
   }
-  @Get('create/finetuns')
+  @Get("create/finetuns")
   async createFineTunes(@Query() args) {
     return this.openaiService.createFineTunes(args);
   }
-  @Get('finetunes')
+  @Get("finetunes")
   async listFineTunes(@Query() args) {
     return this.openaiService.listFineTunes(args);
   }

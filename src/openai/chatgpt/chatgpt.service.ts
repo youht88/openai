@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-//import { ChatGPTAPI, ChatGPTAPIBrowser } from 'chatgpt';
+
 type Account = {
   email: string;
   password: string;
@@ -45,7 +45,7 @@ export class ChatgptService {
     const email = keys[Math.floor(Math.random() * keys.length)];
     return this.accountMap[email];
   }
-  async sendMessage(response, message, accountEmail, conversationId) {
+  async sendMessage(response, message, accountEmail, conversationId, isStream) {
     let account: Account;
     if (!accountEmail) {
       account = this._getRandomAccount();
@@ -58,18 +58,33 @@ export class ChatgptService {
     if (conversationId == null) {
       conversationId = account.conversationId;
     }
-    const res = await account.chatgptApi.sendMessage(message, {
-      // conversationId: conversationId,
-      // parentMessageId: account.parentMessageId,
-      onProgress: (partialResponse) => {
-        console.log(partialResponse);
-      },
-    });
-    account.conversationId = res.conversationId;
-    account.parentMessageId = res.messageId;
-    console.log(
-      `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
-    );
-    return res;
+    let res = {};
+    if (isStream) {
+      res = await account.chatgptApi.sendMessage(message, {
+        conversationId: conversationId,
+        parentMessageId: account.parentMessageId,
+        onProgress: (partialResponse) => {
+          response.write(partialResponse.text);
+        },
+      });
+      account.conversationId = res["conversationId"];
+      account.parentMessageId = res["messageId"];
+      console.log(
+        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
+      );
+      return res["text"];
+    } else {
+      res = await account.chatgptApi.sendMessage(message, {
+        conversationId: conversationId,
+        parentMessageId: account.parentMessageId,
+      });
+      account.conversationId = res["conversationId"];
+      account.parentMessageId = res["id"];
+      console.log(
+        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
+      );
+      console.log(res);
+      return res["text"];
+    }
   }
 }
