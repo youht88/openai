@@ -1,0 +1,4 @@
+{"prompt":"昨天打了3个小时的乒乓球 ->","completion":" {'mode':'input',type:'sport','stime':'昨天','duration':'3个小时','act':'打','name':'乒乓球'}"}
+{"prompt":"昨天打篮球打了多久 ->","completion":" {'mode':'query','type':'sport','stime':'昨天','duration':'','act':'打','name':'篮球'}"}
+{"prompt":"这个礼拜五要去爷爷家 ->","completion":"  {'mode':'plan','type':'behavior','stime':'这个礼拜五','duration':'','act':'去','name':'家'}"}
+{"prompt":"早上吃了一个香蕉和两个蛋糕 ->","completion":"  {'mode':'input','type':'diet','stime':'早上','duration':'','act':'吃',‘obj':[{'name':'香蕉','value':'一'，'unit':'个'},{'name':'蛋糕','value':'两','unit':'个'}]}"}
