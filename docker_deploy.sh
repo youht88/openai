@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
 set -e  # exit on error
+user=1742716458
 businessName=openai
 envMode=dev.env
 # 本地运行的是最新的，可能包括未提交的
@@ -25,11 +27,13 @@ if [[ `uname` == 'Linux' ]]; then
 fi
 branch=`git rev-parse --abbrev-ref HEAD`
 hash=`git rev-parse --short HEAD`
-imgName=${businessName}:${branch}_${d}_${hash}
+imgName=${user}/${businessName}:${branch}_${d}_${hash}
 echo "镜像名为: $imgName"
 
 # 生成镜像
 docker build -t $imgName .
+# 上传docker hub 仓库
+docker push $imgName
 
 # 清理旧的容器服务
 set +e # 下面这行失败是可以接受的
