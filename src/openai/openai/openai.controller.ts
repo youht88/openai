@@ -14,7 +14,9 @@ export class OpenaiController {
   ) {
     const isStream = stream == undefined ? false : true;
     if (isStream) {
-      response.header("Content-Type", "text/event-stream");
+      response.header("Content-Type", "text/event-stream;charset=utf-8");
+    }else{
+      response.header("Content-Type", "text/json;charset=utf-8");  
     }
     const res = await this.openaiService.sendMessage(
       message,
