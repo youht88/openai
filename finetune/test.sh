@@ -51,3 +51,18 @@ openai -k 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 api completions.cr
 
 openai -k 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 api fine_tunes.create -t "train4_prepared.jsonl" -m davinci
 openai -k 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 api fine_tunes.create -t "train5_prepared.jsonl" -m davinci
+
+{"prompt":"Portugal will be removed from the UK's green travel list from Tuesday, 
+   amid rising coronavirus cases and concern over a \"Nepal mutation of the so-called Indian variant\". 
+   It will join the amber list, meaning holidaymakers should not visit and returnees must isolate for 10 days...\n\n###\n\n", 
+ "completion":" Portugal\nUK\nNepal mutation\nIndian variant END"}
+
+ {"prompt":"Summary: <summary of the interaction so far>\n\n
+           Specific information:<for example order details in natural language>\n\n###\n\n
+           Customer: <message1>\nAgent: <response1>\n
+           Customer: <message2>\nAgent:", "completion":" <response2>\n"}
+{"prompt":"Summary: <summary of the interaction so far>\n\n
+           Specific information:<for example order details in natural language>\n\n###\n\n
+          Customer: <message1>\nAgent: <response1>\n
+          Customer: <message2>\nAgent: <response2>\n
+          Customer: <message3>\nAgent:", "completion":" <response3>\n"}

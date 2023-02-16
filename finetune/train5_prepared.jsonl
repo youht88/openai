@@ -1,6 +1,7 @@
-{"prompt":"昨天打了3个小时的乒乓球 ->","completion":" 运动|昨天|打|乒乓球"}
-{"prompt":"昨天打篮球打了多久 ->","completion":" 运动|昨天|打|篮球"}
-{"prompt":"这个礼拜五要去爷爷家 ->","completion":"  {行为|这个礼拜五|去|爷爷家"}
-{"prompt":"早上吃了一个香蕉和二十条鱼 ->","completion":"  {饮食|早上|吃|[香蕉|一|个@鱼|二十|条]"}
-{"prompt":"半小时前吃了1.5碗粥以及和四盘西红柿，还有三块饼干 ->","completion":"  {饮食|半小时前|吃|[香蕉|1.5|碗@西红柿|四|盘@饼干|三|块]"}
-{"prompt":"吃了块雪糕 ->","completion":"  {饮食||吃|[雪糕|一|块]"}
+{"prompt":"昨天打了3个小时的乒乓球 ->","completion":" type=运动,stime=昨天,act=打,name=乒乓球"}
+{"prompt":"昨天打篮球打到下午3点半 ->","completion":" type=运动,etime=[昨天,下午3点半],act=打,name=篮球"}
+{"prompt":"上周五跳舞从下午2点跳到3点半 ->","completion":" type=运动,stime=[上周五,下午2点],etime=[上周五,下午3点半],act=跳,name=舞"}
+{"prompt":"这个礼拜五要去爷爷家 ->","completion":"  type=行为,stime=这个礼拜五,place=去爷爷家"}
+{"prompt":"早上吃了一个香蕉和二十条鱼 ->","completion":"  type=饮食,stime=早上,act=吃,nvu=[香蕉,一,个@鱼|二十|条]"}
+{"prompt":"半小时前吃了1.5碗粥以及和四盘西红柿，还有三块饼干 ->","completion":"  type=饮食,stime=半小时前,act=吃,name=[粥,西红柿,饼干],value=[1.5,4,3],unit=[碗,盘,块]"}
+{"prompt":"吃了块雪糕 ->","completion":"  type=饮食,act=吃,name=[雪糕],value=[一],unit=[块]"}
