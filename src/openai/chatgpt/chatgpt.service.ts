@@ -16,7 +16,7 @@ export class ChatgptService {
   constructor(private readonly conf: ConfigService) {}
   async init(user?) {
     const { ChatGPTAPI } = await import("chatgpt");
-
+    const { ChatGPTUnofficialProxyAPI } = await import("chatgpt");
     const users = JSON.parse(this.conf.get("chatgpt.users") ?? "[]");
     if (!user?.email) {
       const index = Math.floor(Math.random() * users.length);
@@ -27,9 +27,18 @@ export class ChatgptService {
     if (!user) {
       return "please config env/dev.env";
     }
-    const token = user!["tokens"][0];
+    const apiKey = user!["apiKey"][0];
+    const accessToken = user!["accessToken"];
     if (!this.accountMap[user!.email]) {
-      const chatgptApi = new ChatGPTAPI({ apiKey: token });
+      let chatgptApi;
+      if (accessToken) {
+        console.log("ChatGPTUnofficialProxyAPI");
+        chatgptApi = new ChatGPTUnofficialProxyAPI({
+          accessToken: accessToken,
+        });
+      } else {
+        chatgptApi = new ChatGPTAPI({ apiKey: apiKey });
+      }
       this.accountMap[user.email] = {
         email: user.email,
         chatgptApi: chatgptApi,
