@@ -16,13 +16,11 @@ envMode=dev.env
 dtimeStamp=`git show -s --format=%at`
 if [[ `uname` == 'Darwin' ]]; then
   echo "Mac OS"
-  # d=`date -r${dtimeStamp} "+%Y-%m-%d_%H_%M_%S"`
-  d=`date "+%Y-%m-%d"`
+  d=`date -r${dtimeStamp} "+%Y-%m-%d"`
 fi
 
 if [[ `uname` == 'Linux' ]]; then
-  # d=`date -d @${dtimeStamp} "+%Y-%m-%d_%H_%M_%S"`
-  d=`date "+%Y-%m-%d"`
+  d=`date -d @${dtimeStamp} "+%Y-%m-%d"`
   echo "Linux"
 fi
 branch=`git rev-parse --abbrev-ref HEAD`
@@ -30,10 +28,15 @@ hash=`git rev-parse --short HEAD`
 imgName=${user}/${businessName}:${branch}_${d}_${hash}
 echo "镜像名为: $imgName"
 
-# 生成镜像
-docker build -t $imgName .
-# 上传docker hub 仓库
-docker push $imgName
+set +e
+docker pull $imgName
+if [ $? -ne 0]; then
+  # 生成镜像
+  docker build -t $imgName .
+  # 上传docker hub 仓库
+  docker push $imgName
+fi
+set -e
 
 # 清理旧的容器服务
 set +e # 下面这行失败是可以接受的
