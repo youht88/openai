@@ -75,7 +75,7 @@ export class OpenaiService {
       sizeStr = "256x256";
     } else if (sizeMode == "m") {
       sizeStr = "512x512";
-    } else if (sizeMode == "b") {
+    } else if (sizeMode == "l") {
       sizeStr = "1024x1024";
     } else {
       sizeStr = sizeMode;

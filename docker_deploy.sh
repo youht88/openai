@@ -30,7 +30,7 @@ echo "镜像名为: $imgName"
 
 set +e
 docker pull $imgName
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
   # 生成镜像
   docker build -t $imgName .
   # 上传docker hub 仓库

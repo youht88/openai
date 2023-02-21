@@ -48,14 +48,18 @@ $ npm run start:prod
 ## Test
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+- curl localhost:3000/chatgpt/send/how to study
+- curl localhost:3000/chatgpt/send/how to study?stream
+- curl localhost:3000/openai/send/how to study
+- curl localhost:3000/openai/send/how to study?stream
+- curl localhost:3000/chatgpt/send/how to study?accountEmail=<email>&conversationId=<conversationId>
+- curl localhost:3000/openai/image/draw a cat pic?sizeMode=<s|m|l>
+- curl localhost:3000/openai/send/how to study?model=<model>&temperature=<temperature>&max_tokens=<max_tokens>
+- curl localhost:3000/openai/models?name=<name regexp>
+- curl localhost:3000/openai/delModel/<modelname>
+- curl localhost:3000/openai/files
+- curl localhost:3000/openai/delFile/<filename>
+- curl localhost:3000/openai/finetunes
 ```
 
 ## Support
