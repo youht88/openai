@@ -3,7 +3,7 @@
 set -e  # exit on error
 dockerUser=1742716458
 dockerToken=<...>
-businessName=openai
+businessName=openai-s390
 envMode=dev.env
 # 本地运行的是最新的，可能包括未提交的
 # if [ -n "$(git status --porcelain)" ]; then
