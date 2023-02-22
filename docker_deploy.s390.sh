@@ -2,7 +2,7 @@
 
 set -e  # exit on error
 dockerUser=1742716458
-dockerToken=<...>
+dockerToken=0
 businessName=openai-s390
 envMode=dev.env
 # 本地运行的是最新的，可能包括未提交的
@@ -26,7 +26,7 @@ if [[ `uname` == 'Linux' ]]; then
 fi
 branch=`git rev-parse --abbrev-ref HEAD`
 hash=`git rev-parse --short HEAD`
-imgName=${user}/${businessName}:${branch}_${d}_${hash}
+imgName=${dockerUser}/${businessName}:${branch}_${d}_${hash}
 echo "镜像名为: $imgName"
 
 set +e
