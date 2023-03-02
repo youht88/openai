@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Configuration, OpenAIApi } from "openai";
 import { Readable } from "stream";
 
 @Injectable()
 export class OpenaiService {
+  logger = new Logger(OpenaiService.name);
   constructor(private readonly conf: ConfigService) {}
 
   private _getOpenaiApi(apiKey?: string, organization?: string): OpenAIApi {
@@ -12,7 +13,9 @@ export class OpenaiService {
       const apiKeys = JSON.parse(this.conf.get("openai.apiKeys") ?? "[]");
       apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     }
-    console.log(`apiKey:${apiKey},organization:${organization}`);
+    this.logger.debug(
+      `apiKey:${apiKey},'<==========>',organization:${organization}`
+    );
     let configuration;
     if (organization) {
       configuration = new Configuration({
@@ -35,34 +38,58 @@ export class OpenaiService {
     const temperature = parseInt(args.temperature) || 0;
     const max_tokens = parseInt(args.max_tokens) || 2048;
     if (isStream) {
-      const resStream = await openaiApi.createCompletion(
-        {
-          model: model,
-          prompt: prompt,
-          temperature: temperature,
-          max_tokens: max_tokens,
-          stream: isStream,
-        },
-        { responseType: "stream" }
-      );
+      let resStream;
+      try {
+        resStream = await openaiApi.createCompletion(
+          {
+            model: model,
+            prompt: prompt,
+            temperature: temperature,
+            max_tokens: max_tokens,
+            stream: isStream,
+          },
+          { responseType: "stream" }
+        );
+      } catch (e) {
+        this.logger.error(
+          `apikey:${openaiApi["configuration"].apiKey},error code is :${e.code}`
+        );
+        throw e;
+      }
       const stream = resStream.data as any as Readable;
       let streamHead = true;
       stream.on("data", (chunk) => {
         try {
           // Parse the chunk as a JSON object
-          const chunkStr = chunk.toString().trim().replace("data: ", "");
-          if (chunkStr == "[DONE]") {
-            response.end();
-          } else {
-            const data = JSON.parse(chunkStr);
-            // Write the text from the response to the output stream
-            response.write(data.choices[0].text);
-            streamHead = false;
-            // Send immediately to allow chunks to be sent as they arrive
-            //response.flush();
+          const chunkStrs = chunk
+            .toString()
+            .split("\n")
+            .filter((item) => item.trim() != "")
+            .map((item) => {
+              return item
+                .trim()
+                .replace(/^data: /, "")
+                .trim();
+            });
+          for (const chunkStr of chunkStrs) {
+            if (chunkStr.match("\\[DONE\\]")) {
+              response.end();
+            } else {
+              try {
+                const data = JSON.parse(chunkStr);
+                // Write the text from the response to the output stream
+                response.write(data.choices[0].text);
+                streamHead = false;
+                // Send immediately to allow chunks to be sent as they arrive
+                //response.flush();
+              } catch (e) {
+                console.log(`***${chunkStr}***`, e);
+              }
+            }
           }
         } catch (error) {
           // End the stream but do not send the error, as this is likely the DONE message from createCompletion
+          //this.logger.debug(`${error.code}`);
           console.error(error);
           response.end();
         }
@@ -77,51 +104,108 @@ export class OpenaiService {
         );
       });
     } else {
-      const res = await openaiApi.createCompletion({
-        model: model,
-        prompt: prompt,
-        temperature: temperature,
-        max_tokens: max_tokens,
-      });
-      return res.data["choices"][0]["text"];
+      try {
+        const res = await openaiApi.createCompletion({
+          model: model,
+          prompt: prompt,
+          temperature: temperature,
+          max_tokens: max_tokens,
+        });
+        return res.data["choices"][0]["text"];
+      } catch (e) {
+        this.logger.error(
+          `apikey:${openaiApi["configuration"].apiKey},error code is :${e.code}`
+        );
+      }
     }
   }
-  async chatMessage(prompt: string, response, isStream: boolean, args) {
+  async chatMessage(
+    prompt: string,
+    response,
+    isStream: boolean,
+    preMessages,
+    args
+  ) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
       args?.organization
     );
-    const messages = [];
+    const messages = preMessages ?? [];
+
+    messages.push({
+      role: "system",
+      content: "以下回答都用日语,不可以使用其他语言回答问题",
+    });
+    messages.push({
+      role: "user",
+      content: "playwright and puppetter ,which better?",
+    });
+    messages.push({ role: "assistant", content: "都行" });
+    messages.push({
+      role: "user",
+      content: "怎么有效学习?",
+    });
+    messages.push({ role: "assistant", content: "看着办" });
+    messages.push({ role: "assistant", content: "都行" });
+    messages.push({
+      role: "user",
+      content: "你会什么?",
+    });
+    messages.push({ role: "assistant", content: "都会" });
     messages.push({ role: "user", content: prompt });
     const model = args.model ?? this.conf.get("openai.chat.model") ?? "";
     const temperature = parseInt(args.temperature) || 0.5;
     const max_tokens = parseInt(args.max_tokens) || 2048;
     if (isStream) {
-      const resStream = await openaiApi.createChatCompletion(
-        {
-          model: model,
-          messages: messages,
-          temperature: temperature,
-          max_tokens: max_tokens,
-          stream: isStream,
-        },
-        { responseType: "stream" }
-      );
+      let resStream;
+      try {
+        resStream = await openaiApi.createChatCompletion(
+          {
+            model: model,
+            messages: messages,
+            temperature: temperature,
+            max_tokens: max_tokens,
+            stream: isStream,
+          },
+          { responseType: "stream" }
+        );
+      } catch (e) {
+        this.logger.error(
+          `apikey:${openaiApi["configuration"].apiKey},error code is :${e.code}`
+        );
+        throw e;
+      }
       const stream = resStream.data as any as Readable;
       let streamHead = true;
       stream.on("data", (chunk) => {
         try {
           // Parse the chunk as a JSON object
-          const chunkStr = chunk.toString().trim().replace("data: ", "");
-          if (chunkStr == "[DONE]") {
-            response.end();
-          } else {
-            const data = JSON.parse(chunkStr);
-            // Write the text from the response to the output stream
-            response.write(data.choices?.[0]?.delta?.content ?? "");
-            streamHead = false;
-            // Send immediately to allow chunks to be sent as they arrive
-            //response.flush();
+          const chunkStrs = chunk
+            .toString()
+            .split("\n")
+            .filter((item) => item.trim() != "")
+            .map((item) => {
+              return item
+                .trim()
+                .replace(/^data: /, "")
+                .trim();
+            });
+
+          for (const chunkStr of chunkStrs) {
+            if (chunkStr.match("\\[DONE\\]")) {
+              response.end();
+            } else {
+              try {
+                const data = JSON.parse(chunkStr);
+                // Write the text from the response to the output stream
+                response.write(data.choices?.[0]?.delta?.content ?? "");
+              } catch (e) {
+                console.log(`***${chunkStr}***`, e);
+              }
+              streamHead = false;
+              // Send immediately to allow chunks to be sent as they arrive
+              //response.flush();
+            }
           }
         } catch (error) {
           // End the stream but do not send the error, as this is likely the DONE message from createCompletion
@@ -139,13 +223,19 @@ export class OpenaiService {
         );
       });
     } else {
-      const res = await openaiApi.createChatCompletion({
-        model: model,
-        messages: messages,
-        temperature: temperature,
-        max_tokens: max_tokens,
-      });
-      return res.data["choices"][0]["message"]["content"];
+      try {
+        const res = await openaiApi.createChatCompletion({
+          model: model,
+          messages: messages,
+          temperature: temperature,
+          max_tokens: max_tokens,
+        });
+        return res.data["choices"][0]["message"]["content"];
+      } catch (e) {
+        this.logger.error(
+          `apikey:${openaiApi["configuration"].apiKey},error code is :${e.code}`
+        );
+      }
     }
   }
 

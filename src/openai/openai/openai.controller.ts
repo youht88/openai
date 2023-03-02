@@ -46,12 +46,37 @@ export class OpenaiController {
       prompt,
       response,
       isStream,
+      [],
       args
     );
     if (!isStream) {
       response.end(res);
     }
   }
+  // @Post("chat/:prompt")
+  // async chatMessage(
+  //   @Param("prompt") prompt: string,
+  //   @Query() args,
+  //   @Query("stream") stream: string,
+  //   @Res() response
+  // ) {
+  //   const isStream = stream == undefined ? false : true;
+  //   if (isStream) {
+  //     response.header("Content-Type", "text/event-stream;charset=utf-8");
+  //   } else {
+  //     response.header("Content-Type", "text/json;charset=utf-8");
+  //   }
+  //   const res = await this.openaiService.chatMessage(
+  //     prompt,
+  //     response,
+  //     isStream,
+  //     preMessages,
+  //     args
+  //   );
+  //   if (!isStream) {
+  //     response.end(res);
+  //   }
+  // }
   @Get("edit/:message")
   async editMessage(@Param("message") message: string, @Query() args) {
     return this.openaiService.editMessage(message, args);
