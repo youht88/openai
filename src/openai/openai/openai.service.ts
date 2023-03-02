@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Configuration, OpenAIApi } from "openai";
+import { Readable } from "stream";
 
 @Injectable()
 export class OpenaiService {
@@ -13,7 +14,7 @@ export class OpenaiService {
     }
     console.log(`apiKey:${apiKey},organization:${organization}`);
     let configuration;
-    if (!organization) {
+    if (organization) {
       configuration = new Configuration({
         apiKey: apiKey,
         organization: configuration,
@@ -25,31 +26,129 @@ export class OpenaiService {
     }
     return new OpenAIApi(configuration);
   }
-  async sendMessage(message: string, response, isStream, args) {
+  async completionsMessage(prompt: string, response, isStream, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,
       args?.organization
     );
+    const model = args.model ?? this.conf.get("openai.completions.model") ?? "";
+    const temperature = parseInt(args.temperature) || 0;
+    const max_tokens = parseInt(args.max_tokens) || 2048;
     if (isStream) {
-      const res = await openaiApi.createCompletion({
-        model: args.model ?? this.conf.get("openai.model") ?? "",
-        prompt: message,
-        temperature: parseInt(args.temperature) || 0,
-        max_tokens: parseInt(args.max_tokens) || 2048,
-        stream: isStream,
+      const resStream = await openaiApi.createCompletion(
+        {
+          model: model,
+          prompt: prompt,
+          temperature: temperature,
+          max_tokens: max_tokens,
+          stream: isStream,
+        },
+        { responseType: "stream" }
+      );
+      const stream = resStream.data as any as Readable;
+      let streamHead = true;
+      stream.on("data", (chunk) => {
+        try {
+          // Parse the chunk as a JSON object
+          const chunkStr = chunk.toString().trim().replace("data: ", "");
+          if (chunkStr == "[DONE]") {
+            response.end();
+          } else {
+            const data = JSON.parse(chunkStr);
+            // Write the text from the response to the output stream
+            response.write(data.choices[0].text);
+            streamHead = false;
+            // Send immediately to allow chunks to be sent as they arrive
+            //response.flush();
+          }
+        } catch (error) {
+          // End the stream but do not send the error, as this is likely the DONE message from createCompletion
+          console.error(error);
+          response.end();
+        }
       });
-      console.log(res.data);
-      return res.data;
+      stream.on("end", () => {
+        response.end();
+      });
+      stream.on("error", (error) => {
+        console.error(error);
+        response.end(
+          JSON.stringify({ error: true, message: "Error generating response." })
+        );
+      });
     } else {
       const res = await openaiApi.createCompletion({
-        model: args.model ?? this.conf.get("openai.model") ?? "",
-        prompt: message,
-        temperature: parseInt(args.temperature) || 0,
-        max_tokens: parseInt(args.max_tokens) || 2048,
+        model: model,
+        prompt: prompt,
+        temperature: temperature,
+        max_tokens: max_tokens,
       });
       return res.data["choices"][0]["text"];
     }
   }
+  async chatMessage(prompt: string, response, isStream: boolean, args) {
+    const openaiApi: OpenAIApi = this._getOpenaiApi(
+      args?.apiKey,
+      args?.organization
+    );
+    const messages = [];
+    messages.push({ role: "user", content: prompt });
+    const model = args.model ?? this.conf.get("openai.chat.model") ?? "";
+    const temperature = parseInt(args.temperature) || 0.5;
+    const max_tokens = parseInt(args.max_tokens) || 2048;
+    if (isStream) {
+      const resStream = await openaiApi.createChatCompletion(
+        {
+          model: model,
+          messages: messages,
+          temperature: temperature,
+          max_tokens: max_tokens,
+          stream: isStream,
+        },
+        { responseType: "stream" }
+      );
+      const stream = resStream.data as any as Readable;
+      let streamHead = true;
+      stream.on("data", (chunk) => {
+        try {
+          // Parse the chunk as a JSON object
+          const chunkStr = chunk.toString().trim().replace("data: ", "");
+          if (chunkStr == "[DONE]") {
+            response.end();
+          } else {
+            const data = JSON.parse(chunkStr);
+            // Write the text from the response to the output stream
+            response.write(data.choices?.[0]?.delta?.content ?? "");
+            streamHead = false;
+            // Send immediately to allow chunks to be sent as they arrive
+            //response.flush();
+          }
+        } catch (error) {
+          // End the stream but do not send the error, as this is likely the DONE message from createCompletion
+          console.error(error);
+          response.end();
+        }
+      });
+      stream.on("end", () => {
+        response.end();
+      });
+      stream.on("error", (error) => {
+        console.error(error);
+        response.end(
+          JSON.stringify({ error: true, message: "Error generating response." })
+        );
+      });
+    } else {
+      const res = await openaiApi.createChatCompletion({
+        model: model,
+        messages: messages,
+        temperature: temperature,
+        max_tokens: max_tokens,
+      });
+      return res.data["choices"][0]["message"]["content"];
+    }
+  }
+
   async editMessage(message: string, args) {
     const openaiApi: OpenAIApi = this._getOpenaiApi(
       args?.apiKey,

@@ -1,13 +1,14 @@
 import { Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { Readable } from "stream";
 import { OpenaiService } from "./openai.service";
 
 @Controller("openai")
 export class OpenaiController {
   lastContext = "";
   constructor(private readonly openaiService: OpenaiService) {}
-  @Get("send/:message")
-  async sendMessage(
-    @Param("message") message: string,
+  @Get("completions/:prompt")
+  async completionsMessage(
+    @Param("prompt") prompt: string,
     @Query() args,
     @Query("stream") stream: string,
     @Res() response
@@ -15,18 +16,39 @@ export class OpenaiController {
     const isStream = stream == undefined ? false : true;
     if (isStream) {
       response.header("Content-Type", "text/event-stream;charset=utf-8");
-    }else{
-      response.header("Content-Type", "text/json;charset=utf-8");  
+    } else {
+      response.header("Content-Type", "text/json;charset=utf-8");
     }
-    const res = await this.openaiService.sendMessage(
-      message,
+    const res = await this.openaiService.completionsMessage(
+      prompt,
       response,
-      stream,
+      isStream,
       args
     );
+    if (!isStream) {
+      response.end(res);
+    }
+  }
+  @Get("chat/:prompt")
+  async chatMessage(
+    @Param("prompt") prompt: string,
+    @Query() args,
+    @Query("stream") stream: string,
+    @Res() response
+  ) {
+    const isStream = stream == undefined ? false : true;
     if (isStream) {
-      response.end();
+      response.header("Content-Type", "text/event-stream;charset=utf-8");
     } else {
+      response.header("Content-Type", "text/json;charset=utf-8");
+    }
+    const res = await this.openaiService.chatMessage(
+      prompt,
+      response,
+      isStream,
+      args
+    );
+    if (!isStream) {
       response.end(res);
     }
   }
