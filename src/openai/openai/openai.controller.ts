@@ -79,7 +79,7 @@ export class OpenaiController {
     }
   }
   @Post('chat')
-  async chatPostMessage(@Body() body, @Res() response) {
+  async chatPostMessage(@Body() body, @Req() req, @Res() response) {
     const isStream = JSON.parse(
       body.stream == undefined || body.stream == 'false' ? 'false' : 'true',
     );

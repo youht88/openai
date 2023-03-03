@@ -139,17 +139,15 @@ export class OpenaiService {
     model = model ?? this.conf.get('openai.chat.model') ?? '';
     temperature = parseInt(temperature ?? '0.5');
     max_tokens = parseInt(max_tokens ?? '2048');
-
+    const default_system = this.conf.get('openai.chat.default_system') ?? '';
     const openaiApi: OpenAIApi = this._getOpenaiApi(apiKey, organization);
-    messages.unshift({
-      role: 'system',
-      content: '以下回答都用中文,尽量简短',
-    });
-    // messages.push({
-    //   role: 'user',
-    //   content: 'playwright and puppetter ,which better?',
-    // });
-    // messages.push({ role: 'assistant', content: '都行' });
+    if (default_system) {
+      messages.unshift({
+        role: 'system',
+        content: default_system,
+      });
+    }
+    console.log('prompt:', prompt);
     if (prompt) {
       messages.push({ role: 'user', content: prompt });
     }
