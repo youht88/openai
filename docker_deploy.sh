@@ -4,7 +4,6 @@ set -e  # exit on error
 dockerUser=1742716458
 dockerToken=0
 businessName=openai
-envMode=dev.env
 # 本地运行的是最新的，可能包括未提交的
 # if [ -n "$(git status --porcelain)" ]; then
 #   echo "文件被修改，请先清空变化";
@@ -48,10 +47,10 @@ set -e
 
 # 运行容器
 echo "如果你想手动查找问题，可以试试以下命令来运行容器"
-echo "docker run -it --rm --name ${businessName} --env-file ./env/${envMode} -p 8088:3000  $imgName /bin/sh "
+echo "docker run -it --rm --name ${businessName} -v env:/home/env -p 8088:3000  $imgName /bin/sh "
 docker service create --name ${businessName} \
             --replicas 1 \
-            --env-file ./env/${envMode} \
+            --mount type=bind,source=dev,destination=/home/dev \
             -p 9322:3000 \
             $imgName
 

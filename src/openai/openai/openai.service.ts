@@ -10,7 +10,7 @@ export class OpenaiService {
 
   private _getOpenaiApi(apiKey?: string, organization?: string): OpenAIApi {
     if (!apiKey) {
-      const apiKeys = JSON.parse(this.conf.get('openai.apiKeys') ?? '[]');
+      const apiKeys = this.conf.get('openai.apiKeys') ?? [];
       apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     }
     this.logger.debug(

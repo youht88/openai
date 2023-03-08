@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 type Account = {
   email: string;
@@ -15,9 +15,9 @@ export class ChatgptService {
   //private readonly stream = eventStream.
   constructor(private readonly conf: ConfigService) {}
   async init(user?) {
-    const { ChatGPTAPI } = await import("chatgpt");
-    const { ChatGPTUnofficialProxyAPI } = await import("chatgpt");
-    const users = JSON.parse(this.conf.get("chatgpt.users") ?? "[]");
+    const { ChatGPTAPI } = await import('chatgpt');
+    const { ChatGPTUnofficialProxyAPI } = await import('chatgpt');
+    const users = this.conf.get('chatgpt.users') ?? [];
     if (!user?.email) {
       const index = Math.floor(Math.random() * users.length);
       user = users[index];
@@ -25,14 +25,14 @@ export class ChatgptService {
     console.log(user);
 
     if (!user) {
-      return "please config env/dev.env";
+      return 'please config env/.dev.env';
     }
-    const apiKey = user!["apiKey"][0];
-    const accessToken = user!["accessToken"];
+    const apiKey = user!['apiKey'][0];
+    const accessToken = user!['accessToken'];
     if (!this.accountMap[user!.email]) {
       let chatgptApi;
       if (accessToken) {
-        console.log("ChatGPTUnofficialProxyAPI");
+        console.log('ChatGPTUnofficialProxyAPI');
         chatgptApi = new ChatGPTUnofficialProxyAPI({
           accessToken: accessToken,
         });
@@ -62,7 +62,7 @@ export class ChatgptService {
       account = this.accountMap[accountEmail];
     }
     console.log(
-      `message:${message},conversationId:${account.conversationId}/${conversationId},parentMessageId:${account.parentMessageId}`
+      `message:${message},conversationId:${account.conversationId}/${conversationId},parentMessageId:${account.parentMessageId}`,
     );
     if (conversationId == null) {
       conversationId = account.conversationId;
@@ -76,24 +76,24 @@ export class ChatgptService {
           response.write(partialResponse.text);
         },
       });
-      account.conversationId = res["conversationId"];
-      account.parentMessageId = res["messageId"];
+      account.conversationId = res['conversationId'];
+      account.parentMessageId = res['messageId'];
       console.log(
-        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
+        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`,
       );
-      return res["text"];
+      return res['text'];
     } else {
       res = await account.chatgptApi.sendMessage(message, {
         conversationId: conversationId,
         parentMessageId: account.parentMessageId,
       });
-      account.conversationId = res["conversationId"];
-      account.parentMessageId = res["id"];
+      account.conversationId = res['conversationId'];
+      account.parentMessageId = res['id'];
       console.log(
-        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`
+        `emali:${account.email},conversationId:${account.conversationId},parentMessageId:${account.parentMessageId}`,
       );
       console.log(res);
-      return res["text"];
+      return res['text'];
     }
   }
 }

@@ -6,13 +6,19 @@ import { ChatgptModule } from './openai/chatgpt/chatgpt.module';
 import { OpenaiModule } from './openai/openai/openai.module';
 
 import { EventsModule } from './events/events.module';
+import * as yaml from 'yaml';
+import * as fs from 'fs';
 
 @Module({
   imports: [
     EventsModule,
     ConfigModule.forRoot({
-      envFilePath: ['./env/dev.env'],
+      isGlobal: true,
+      load: [() => yaml.parse(fs.readFileSync('env/.dev.yaml', 'utf-8'))],
     }),
+    // ConfigModule.forRoot({
+    //   envFilePath: ['./env/dev.env'],
+    // }),
     OpenaiModule,
     ChatgptModule,
   ],
