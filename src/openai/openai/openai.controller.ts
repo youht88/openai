@@ -63,6 +63,24 @@ export class OpenaiController {
       response.end(res);
     }
   }
+  @Get('test')
+  async test(@Res() response) {
+    response.header('Content-Type', 'text/event-stream;charset=utf-8');
+    response.header('Access-Control-Allow-Origin', '*');
+    console.log(response);
+    response.write('start...\n');
+    await new Promise<void>((resolve, reject) => {
+      setTimeout(() => {
+        response.write('3 second here!\n');
+        setTimeout(() => {
+          response.write('2 second here!\n');
+          resolve();
+        }, 2000);
+      }, 3000);
+    });
+    response.write('all done\n');
+    response.end();
+  }
   @Get('chat')
   async chatGetMessage(@Query() query, @Res() response) {
     const isStream = JSON.parse(
@@ -73,6 +91,7 @@ export class OpenaiController {
     } else {
       response.header('Content-Type', 'text/json;charset=utf-8');
     }
+    response.header('Access-Control-Allow-Origin', '*');
     const res = await this.openaiService.chatMessage(query, response, isStream);
     if (!isStream) {
       response.end(res);
@@ -80,15 +99,17 @@ export class OpenaiController {
   }
   @Post('chat')
   async chatPostMessage(@Body() body, @Req() req, @Res() response) {
-    const isStream = JSON.parse(
-      body.stream == undefined || body.stream == 'false' ? 'false' : 'true',
-    );
+    const isStream =
+      body.stream == undefined || body.stream == false ? false : true;
     if (isStream) {
       response.header('Content-Type', 'text/event-stream;charset=utf-8');
     } else {
       response.header('Content-Type', 'text/json;charset=utf-8');
     }
+    response.header('Access-Control-Allow-Origin', '*');
+    console.log('start...');
     const res = await this.openaiService.chatMessage(body, response, isStream);
+    console.log('result:', res);
     if (!isStream) {
       response.end(res);
     }
