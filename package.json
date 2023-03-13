@@ -21,7 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^8.0.0",
+    "@nestjs/common": "^8.4.7",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/ng-universal": "^6.1.0",
@@ -29,6 +29,7 @@
     "@nestjs/platform-socket.io": "^8.0.0",
     "@nestjs/websockets": "^8.0.0",
     "chatgpt": "^4.8.3",
+    "cors": "^2.8.5",
     "openai": "^3.2.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
