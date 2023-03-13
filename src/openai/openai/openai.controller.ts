@@ -65,12 +65,12 @@ export class OpenaiController {
     }
   }
   @Get('test')
-  @Header('Access-Control-Allow-Origin', '*')
-  @Header('Access-Control-Allow-Methods', 'GET, POST')
-  @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // @Header('Access-Control-Allow-Origin', '*')
+  // @Header('Access-Control-Allow-Methods', 'GET, POST')
+  // @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   async test(@Res() response) {
     response.header('Content-Type', 'text/event-stream;charset=utf-8');
-    response.header('Access-Control-Allow-Origin', '*');
+    //response.header('Access-Control-Allow-Origin', '*');
     console.log(response);
     response.write('start...\n');
     await new Promise<void>((resolve, reject) => {
@@ -86,9 +86,9 @@ export class OpenaiController {
     response.end();
   }
   @Get('chat')
-  @Header('Access-Control-Allow-Origin', '*')
-  @Header('Access-Control-Allow-Methods', 'GET, POST')
-  @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // @Header('Access-Control-Allow-Origin', '*')
+  // @Header('Access-Control-Allow-Methods', 'GET, POST')
+  // @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   async chatGetMessage(@Query() query, @Res() response) {
     const isStream = JSON.parse(
       query.stream == undefined || query.stream == 'false' ? 'false' : 'true',
@@ -104,9 +104,9 @@ export class OpenaiController {
     }
   }
   @Post('chat')
-  @Header('Access-Control-Allow-Origin', '*')
-  @Header('Access-Control-Allow-Methods', 'GET, POST')
-  @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // @Header('Access-Control-Allow-Origin', '*')
+  // @Header('Access-Control-Allow-Methods', 'GET, POST')
+  // @Header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   async chatPostMessage(@Body() body, @Req() req, @Res() response) {
     const isStream =
       body.stream == undefined || body.stream == false ? false : true;
