@@ -167,7 +167,7 @@ export class OpenaiService {
     messages = messages ?? [];
     prompt = prompt ?? null;
     model = model ?? this.conf.get('openai.chat.model') ?? '';
-    temperature = parseInt(temperature ?? '0.5');
+    temperature = parseFloat(temperature ?? '0.5');
     max_tokens = parseInt(max_tokens ?? '2048');
     const default_system = this.conf.get('openai.chat.default_system') ?? '';
     const openaiApi: OpenAIApi = this._getOpenaiApi(apiKey, organization);
@@ -194,9 +194,11 @@ export class OpenaiService {
     if (isStream) {
       let resStream;
       try {
+        console.log('start openai remote');
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
         });
+        console.log('end openai remote');
       } catch (e) {
         this.logger.error(
           `apikey:${openaiApi['configuration'].apiKey},error code is :${e.code}`,
@@ -205,6 +207,7 @@ export class OpenaiService {
       }
       const stream = resStream.data as any as Readable;
       stream.on('data', (chunk) => {
+        console.log('find chunk');
         try {
           // Parse the chunk as a JSON object
           const chunkStrs = chunk
