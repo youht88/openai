@@ -205,7 +205,6 @@ export class OpenaiService {
       }
       const stream = resStream.data as any as Readable;
       stream.on('data', (chunk) => {
-        console.log('find chunk');
         try {
           // Parse the chunk as a JSON object
           const chunkStrs = chunk
