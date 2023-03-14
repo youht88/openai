@@ -4,7 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ChatgptModule } from './openai/chatgpt/chatgpt.module';
 import { OpenaiModule } from './openai/openai/openai.module';
-
+import { EventsModule } from './events/events.module';
 import * as yaml from 'yaml';
 import * as fs from 'fs';
 
@@ -19,6 +19,7 @@ import * as fs from 'fs';
     // }),
     OpenaiModule,
     ChatgptModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

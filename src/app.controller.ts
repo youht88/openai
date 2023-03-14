@@ -1,4 +1,5 @@
-import { Controller, Get, Render } from '@nestjs/common';
+import { Controller, Get, Render, Res } from '@nestjs/common';
+import * as path from 'path';
 import { AppService } from './app.service';
 
 @Controller()
@@ -9,9 +10,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
-  @Get('/test')
-  @Render('index.html')
-  root() {
-    return { message: 'just a test' };
+  @Get('/socket')
+  //@Render('index.html')
+  socket(@Res() res) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
 }
