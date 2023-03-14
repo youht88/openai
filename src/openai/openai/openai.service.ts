@@ -194,11 +194,9 @@ export class OpenaiService {
     if (isStream) {
       let resStream;
       try {
-        console.log('start openai remote');
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
         });
-        console.log('end openai remote');
       } catch (e) {
         this.logger.error(
           `apikey:${openaiApi['configuration'].apiKey},error code is :${e.code}`,
