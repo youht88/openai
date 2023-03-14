@@ -29,6 +29,36 @@ export class OpenaiService {
     }
     return new OpenAIApi(configuration);
   }
+  async test(response, socket) {
+    if (socket) {
+      console.log('test....', socket);
+      socket.emit('testAck', 'start...\n');
+      console.log('test first Ack');
+      await new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          socket.emit('testAck', '3 second here!\n');
+          setTimeout(() => {
+            socket.emit('testAck', '2 second here!\n');
+            resolve();
+          }, 2000);
+        }, 3000);
+      });
+      socket.emit('testAck', 'all done\n');
+    } else {
+      response.write('start...\n');
+      await new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          response.write('3 second here!\n');
+          setTimeout(() => {
+            response.write('2 second here!\n');
+            resolve();
+          }, 2000);
+        }, 3000);
+      });
+      response.write('all done\n');
+      response.end();
+    }
+  }
   async completionsMessage(args, response, isStream: boolean) {
     let { prompt, apiKey, organization, model, temperature, max_tokens } = args;
     apiKey = apiKey ?? null;
@@ -121,7 +151,7 @@ export class OpenaiService {
       }
     }
   }
-  async chatMessage(args, response, isStream: boolean) {
+  async chatMessage(args, others) {
     let {
       prompt,
       apiKey,
@@ -131,7 +161,7 @@ export class OpenaiService {
       temperature,
       max_tokens,
     } = args;
-
+    let { response, isStream, socket } = others;
     apiKey = apiKey ?? null;
     organization = organization ?? null;
     messages = messages ?? [];
@@ -160,6 +190,7 @@ export class OpenaiService {
       stream: isStream,
     };
     console.log(options);
+
     if (isStream) {
       let resStream;
       try {
@@ -189,12 +220,22 @@ export class OpenaiService {
 
           for (const chunkStr of chunkStrs) {
             if (chunkStr.match('\\[DONE\\]')) {
-              response.end();
+              if (socket) {
+                socket.emit('completionChunk', '[DONE]');
+              } else {
+                response.end();
+              }
             } else {
               try {
                 const data = JSON.parse(chunkStr);
-                // Write the text from the response to the output stream
-                response.write(data.choices?.[0]?.delta?.content ?? '');
+                if (socket) {
+                  socket.emit(
+                    'completionChunk',
+                    data.choices?.[0]?.delta?.content ?? '',
+                  );
+                } else {
+                  response.write(data.choices?.[0]?.delta?.content ?? '');
+                }
               } catch (e) {
                 console.log(`***${chunkStr}***`, e);
               }
@@ -203,7 +244,11 @@ export class OpenaiService {
         } catch (error) {
           // End the stream but do not send the error, as this is likely the DONE message from createCompletion
           console.error(error);
-          response.end();
+          if (socket) {
+            socket.emit('completionChunk', '[DONE]');
+          } else {
+            response.end();
+          }
         }
       });
       stream.on('end', () => {

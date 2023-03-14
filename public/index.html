@@ -10,6 +10,13 @@
         socket.emit('identity', 0, response =>
           console.log('Identity:', response),
         );
+        socket.emit('test',{prompt:'hello'});
+      });
+      socket.on('testAck',(data)=>{
+        console.log('testAck',data);
+      });
+      socket.on('prometionChunk',(data)=>{
+         console.log('prometionChunk',data);
       });
       socket.on('events', function(data) {
         console.log('event', data);

@@ -72,18 +72,7 @@ export class OpenaiController {
     response.header('Content-Type', 'text/event-stream;charset=utf-8');
     //response.header('Access-Control-Allow-Origin', '*');
     console.log(response);
-    response.write('start...\n');
-    await new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        response.write('3 second here!\n');
-        setTimeout(() => {
-          response.write('2 second here!\n');
-          resolve();
-        }, 2000);
-      }, 3000);
-    });
-    response.write('all done\n');
-    response.end();
+    return await this.openaiService.test(response, null);
   }
   @Get('chat')
   // @Header('Access-Control-Allow-Origin', '*')
@@ -98,7 +87,11 @@ export class OpenaiController {
     } else {
       response.header('Content-Type', 'text/json;charset=utf-8');
     }
-    const res = await this.openaiService.chatMessage(query, response, isStream);
+    const res = await this.openaiService.chatMessage(query, {
+      response,
+      isStream,
+      socket: null,
+    });
     if (!isStream) {
       response.end(res);
     }
@@ -116,7 +109,11 @@ export class OpenaiController {
       response.header('Content-Type', 'text/json;charset=utf-8');
     }
     console.log('start...');
-    const res = await this.openaiService.chatMessage(body, response, isStream);
+    const res = await this.openaiService.chatMessage(body, {
+      response,
+      isStream,
+      socket: null,
+    });
     console.log('result:', res);
     if (!isStream) {
       response.end(res);
