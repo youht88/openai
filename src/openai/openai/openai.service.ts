@@ -31,7 +31,7 @@ export class OpenaiService {
   }
   async test(response, socket) {
     if (socket) {
-      console.log('test....', socket);
+      console.log('test....');
       socket.emit('testAck', 'start...\n');
       console.log('test first Ack');
       await new Promise<void>((resolve, reject) => {
@@ -245,23 +245,31 @@ export class OpenaiService {
           // End the stream but do not send the error, as this is likely the DONE message from createCompletion
           console.error(error);
           if (socket) {
-            socket.emit('completionChunk', '[DONE]');
+            socket.emit('completionChunk', '[ERROR]');
           } else {
             response.end();
           }
         }
       });
       stream.on('end', () => {
-        response.end();
+        if (socket) {
+          socket.emit('completionChunk', '[DONE]');
+        } else {
+          response.end();
+        }
       });
       stream.on('error', (error) => {
         console.error(error);
-        response.end(
-          JSON.stringify({
-            error: true,
-            message: 'Error generating response.',
-          }),
-        );
+        if (socket) {
+          socket.emit('completionChunk', '[ERROR]');
+        } else {
+          response.end(
+            JSON.stringify({
+              error: true,
+              message: 'Error generating response.',
+            }),
+          );
+        }
       });
     } else {
       try {
