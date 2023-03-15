@@ -161,7 +161,7 @@ export class OpenaiService {
       temperature,
       max_tokens,
     } = args;
-    let { response, isStream, socket } = others;
+    let { response, isStream, socket, abortController } = others;
     apiKey = apiKey ?? null;
     organization = organization ?? null;
     messages = messages ?? [];
@@ -190,18 +190,23 @@ export class OpenaiService {
       stream: isStream,
     };
     console.log(options);
-
     if (isStream) {
       let resStream;
       try {
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
+          signal: abortController.signal,
         });
       } catch (e) {
-        this.logger.error(
-          `apikey:${openaiApi['configuration'].apiKey},error code is :${e.code}`,
-        );
-        throw e;
+        if (e.name == 'AbortError') {
+          console.log('Request aborted', e.message);
+          throw e;
+        } else {
+          this.logger.error(
+            `apikey:${openaiApi['configuration'].apiKey},error code is :${e.code}`,
+          );
+          throw e;
+        }
       }
       const stream = resStream.data as any as Readable;
       stream.on('data', (chunk) => {

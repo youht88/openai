@@ -17,6 +17,8 @@ import { OpenaiService } from 'src/openai/openai/openai.service';
 })
 export class EventsGateway {
   constructor(private readonly openaiService: OpenaiService) {}
+  private abortController = new AbortController();
+
   @WebSocketServer()
   server: Server;
 
@@ -32,12 +34,17 @@ export class EventsGateway {
     await this.openaiService.test(null, this.server);
     return 'ok';
   }
+  @SubscribeMessage('cancel')
+  async cancel(@MessageBody() data: any) {
+    this.abortController.abort();
+  }
   @SubscribeMessage('chat')
   async chat(@MessageBody() data: any): Promise<string> {
     let others = {
       response: null,
       socket: this.server,
       isStream: true,
+      abortController: this.abortController,
     };
     await this.openaiService.chatMessage(data, others);
     return 'ok';
