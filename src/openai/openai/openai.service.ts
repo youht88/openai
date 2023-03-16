@@ -161,7 +161,13 @@ export class OpenaiService {
       temperature,
       max_tokens,
     } = args;
-    let { response, isStream, socket, abortController } = others;
+    let {
+      response,
+      isStream,
+      socket,
+      //abortController
+      cancelTokenSource,
+    } = others;
     apiKey = apiKey ?? null;
     organization = organization ?? null;
     messages = messages ?? [];
