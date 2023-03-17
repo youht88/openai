@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Configuration, OpenAIApi } from 'openai';
 import { Readable } from 'stream';
 import axios from 'axios';
+import * as fs from 'fs';
 @Injectable()
 export class OpenaiService {
   logger = new Logger(OpenaiService.name);
@@ -198,6 +199,17 @@ export class OpenaiService {
     console.log(options);
     if (isStream) {
       let resStream;
+      if (socket) {
+        fs.appendFile(
+          'content.txt',
+          `${new Date()} ${socket.id}:${
+            messages[messages.length - 1]['content']
+          }\n`,
+          (err) => {
+            return;
+          },
+        );
+      }
       try {
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
