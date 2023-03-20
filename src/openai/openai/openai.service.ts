@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Configuration, OpenAIApi } from 'openai';
 import { Readable } from 'stream';
-
+import axios from 'axios';
+import * as fs from 'fs';
 @Injectable()
 export class OpenaiService {
   logger = new Logger(OpenaiService.name);
@@ -29,21 +30,21 @@ export class OpenaiService {
     }
     return new OpenAIApi(configuration);
   }
-  async test(response, socket) {
-    if (socket) {
+  async test(response, client) {
+    if (client) {
       console.log('test....');
-      socket.emit('testAck', 'start...\n');
+      client.emit('testAck', 'start...\n');
       console.log('test first Ack');
       await new Promise<void>((resolve, reject) => {
         setTimeout(() => {
-          socket.emit('testAck', '3 second here!\n');
+          client.emit('testAck', '3 second here!\n');
           setTimeout(() => {
-            socket.emit('testAck', '2 second here!\n');
+            client.emit('testAck', '2 second here!\n');
             resolve();
           }, 2000);
         }, 3000);
       });
-      socket.emit('testAck', 'all done\n');
+      client.emit('testAck', 'all done\n');
     } else {
       response.write('start...\n');
       await new Promise<void>((resolve, reject) => {
@@ -161,7 +162,13 @@ export class OpenaiService {
       temperature,
       max_tokens,
     } = args;
-    let { response, isStream, socket, abortController } = others;
+    let {
+      response,
+      isStream,
+      socket,
+      //abortController
+      cancelTokenSource,
+    } = others;
     apiKey = apiKey ?? null;
     organization = organization ?? null;
     messages = messages ?? [];
@@ -192,13 +199,25 @@ export class OpenaiService {
     console.log(options);
     if (isStream) {
       let resStream;
+      if (socket) {
+        fs.appendFile(
+          'content.txt',
+          `${new Date()} ${socket.id}:${
+            messages[messages.length - 1]['content']
+          }\n`,
+          (err) => {
+            return;
+          },
+        );
+      }
       try {
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
-          signal: abortController.signal,
+          //signal: abortController.signal,
+          cancelToken: cancelTokenSource.token,
         });
       } catch (e) {
-        if (e.name == 'AbortError') {
+        if (axios.isCancel(e)) {
           console.log('Request aborted', e.message);
           throw e;
         } else {
