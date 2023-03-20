@@ -214,7 +214,7 @@ export class OpenaiService {
         resStream = await openaiApi.createChatCompletion(options, {
           responseType: 'stream',
           //signal: abortController.signal,
-          cancelToken: cancelTokenSource.token,
+          cancelToken: cancelTokenSource?.token,
         });
       } catch (e) {
         if (axios.isCancel(e)) {
