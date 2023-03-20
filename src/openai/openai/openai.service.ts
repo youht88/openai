@@ -171,7 +171,7 @@ export class OpenaiService {
     max_tokens = parseInt(max_tokens ?? '2048');
     const default_system = this.conf.get('openai.chat.default_system') ?? '';
     const openaiApi: OpenAIApi = this._getOpenaiApi(apiKey, organization);
-    if (default_system && messages[0]['role'] != 'system') {
+    if (default_system && messages && messages[0]['role'] != 'system') {
       messages.unshift({
         role: 'system',
         content: default_system,
