@@ -212,9 +212,9 @@ export class OpenaiService {
       if (socket) {
         fs.appendFile(
           'content.txt',
-          `${this.formatNow()} ${socket.id}-${apiKey}:${
-            messages[messages.length - 1]['content']
-          }\n`,
+          `${this.formatNow()} ${socket.id}-${
+            openaiApi['configuration'].apiKey
+          }:${messages[messages.length - 1]['content']}\n`,
           (err) => {
             return;
           },
