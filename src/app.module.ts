@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ChatgptModule } from './openai/chatgpt/chatgpt.module';
+//import { ChatgptModule } from './openai/chatgpt/chatgpt.module';
 import { OpenaiModule } from './openai/openai/openai.module';
 import { EventsModule } from './events/events.module';
 import * as yaml from 'yaml';
@@ -18,7 +18,7 @@ import * as fs from 'fs';
     //   envFilePath: ['./env/dev.env'],
     // }),
     OpenaiModule,
-    ChatgptModule,
+    //ChatgptModule,
     EventsModule,
   ],
   controllers: [AppController],

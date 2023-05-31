@@ -30,7 +30,6 @@
     "@nestjs/websockets": "^8.0.0",
     "@socket.io/redis-adapter": "^8.1.0",
     "@types/ws": "^8.5.4",
-    "chatgpt": "^4.8.3",
     "copyfiles": "^2.4.1",
     "cors": "^2.8.5",
     "openai": "^3.2.1",
